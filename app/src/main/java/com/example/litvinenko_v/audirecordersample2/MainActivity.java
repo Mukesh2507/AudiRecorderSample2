@@ -1,5 +1,7 @@
 package com.example.litvinenko_v.audirecordersample2;
 
+import android.media.AudioManager;
+import android.media.AudioTrack;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -13,7 +15,9 @@ import android.util.Log;
 import android.view.View;
 import android.os.Environment;
 import android.widget.Button;
+import android.widget.Toast;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -49,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private void setButtonHandlers() {
         ((Button) findViewById(R.id.btnStart)).setOnClickListener(btnClick);
         ((Button) findViewById(R.id.btnStop)).setOnClickListener(btnClick);
+        ((Button) findViewById(R.id.btnPlayBuffer)).setOnClickListener(btnClick);
     }
 
     private void enableButton(int id, boolean isEnable) {
@@ -164,6 +169,17 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.btnStop: {
                     enableButtons(false);
                     stopRecording();
+                    break;
+                }
+                case R.id.btnPlayBuffer: {
+                    String filePathWave =  Environment.getExternalStorageDirectory()+"/Download/voice8K16bitmono.wav";
+                    try {
+                        PlayAudioFileViaAudioTrack(filePathWave, bufferSize);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    //enableButtons(false);
+                    //stopRecording();
                     break;
                 }
             }
@@ -290,6 +306,7 @@ public class MainActivity extends AppCompatActivity {
             CorrectWaveFileHeader(outFilename, totalAudioLen, totalDataLen);
             outFileStream.close();
             System.out.println("Data write finished!");
+            //Toast.makeText("Data write finished!",15);
             //outFileStream.getChannel().
             //copyWaveFile(filePath, filePathWave);
         } catch (IOException e) {
@@ -374,5 +391,54 @@ public class MainActivity extends AppCompatActivity {
         header[43] = (byte) ((totalAudioLen >> 24) & 0xff);
 
         out.write(header, 0, 44);
+    }
+
+    private void PlayAudioFileViaAudioTrack(String filePath, int MinBufferSize) throws IOException {
+        // We keep temporarily filePath globally as we have only two sample sounds now..
+
+//        if (filePath == null)
+//            return;
+
+        AudioTrack at = new AudioTrack(AudioManager.STREAM_MUSIC, 44100, AudioFormat.CHANNEL_IN_STEREO,
+                AudioFormat.ENCODING_PCM_16BIT, MinBufferSize, AudioTrack.MODE_STREAM);
+
+
+        if (at == null) {
+            Log.d("TCAudio", "audio track is not initialised ");
+            return;
+        }
+
+        int count = 512 * 1024; // 512 kb
+//Reading the file..
+        byte[] byteData = null;
+        File file = null;
+        file = new File(filePath);
+
+        byteData = new byte[(int) count];
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream(file);
+
+        } catch (FileNotFoundException e) {
+// TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        int firstByte = 44;
+        int bytesread = 0, ret = 0;
+        int size = (int) file.length()-firstByte;
+        at.play();
+        //while (bytesread < size) {
+            //ret = in.read(byteData, firstByte, count-firstByte);
+            ret = in.read(byteData, firstByte, byteData.length-firstByte);
+            at.write(byteData,0, ret);
+            //if (ret != -1) {
+                // Write the byte array to the track
+                 //at.write(byteData,0, ret);
+                 //bytesread += ret;
+                 //} else break;
+                 //} in.close(); at.stop(); at.release();
+                //
+
+
     }
 }
