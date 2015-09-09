@@ -287,8 +287,7 @@ public class MainActivity extends AppCompatActivity {
             totalAudioLen = outFileStream.getChannel().size()-36;
             //totalAudioLen = readCount;
             totalDataLen = totalAudioLen + 36;
-            CorrectWaveFileHeader(outFilename, totalAudioLen, totalDataLen,
-                    longSampleRate, channels, byteRate);
+            CorrectWaveFileHeader(outFilename, totalAudioLen, totalDataLen);
             outFileStream.close();
             System.out.println("Data write finished!");
             //outFileStream.getChannel().
@@ -300,10 +299,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void CorrectWaveFileHeader(
             String filePath, long totalAudioLen,
-            long totalDataLen, long longSampleRate, int channels,
-            long byteRate) throws IOException {
+            long totalDataLen) throws IOException {
 
-        byte[] header = new byte[44];
 
         RandomAccessFile randomAccessFile = new RandomAccessFile(filePath, "rw");
         WriteOffset(randomAccessFile, 4, (byte) (totalDataLen & 0xff));
