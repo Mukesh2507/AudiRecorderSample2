@@ -1,21 +1,19 @@
 package com.example.litvinenko_v.audirecordersample2;
 
+import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioRecord;
 import android.media.AudioTrack;
-import android.support.v7.app.AppCompatActivity;
+import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-
-import android.media.AudioFormat;
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
-import android.util.Log;
 import android.view.View;
-import android.os.Environment;
 import android.widget.Button;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Objects;
 
 /////
 
@@ -408,36 +405,43 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        int count = 512 * 1024; // 512 kb
-//Reading the file..
+        int bufferCount = 192 * 1024; // 192 kb
+
         byte[] byteData = null;
         File file = null;
         file = new File(filePath);
 
-        byteData = new byte[(int) count];
         FileInputStream in = null;
         try {
             in = new FileInputStream(file);
 
         } catch (FileNotFoundException e) {
-// TODO Auto-generated catch block
             e.printStackTrace();
         }
         int firstByte = 44;
         int bytesread = 0, ret = 0;
-        int size = (int) file.length()-firstByte;
+        int size = (int) in.getChannel().size();//(int) file.length();
+        int byteCount = bufferCount;
+
+        byteData = new byte[size];
         at.play();
-        //while (bytesread < size) {
-            //ret = in.read(byteData, firstByte, count-firstByte);
-            ret = in.read(byteData, firstByte, byteData.length-firstByte);
-            at.write(byteData,0, ret);
-            //if (ret != -1) {
-                // Write the byte array to the track
-                 //at.write(byteData,0, ret);
-                 //bytesread += ret;
-                 //} else break;
-                 //} in.close(); at.stop(); at.release();
-                //
+        ret = in.read(byteData, firstByte, byteData.length-firstByte);
+        at.write(byteData, 0, ret);
+
+        /*if (byteCount > size) {
+            byteCount = size;
+        }
+        byteData = new byte[byteCount];
+        at.play();
+        while (firstByte < size) {
+            ret = in.read(byteData, firstByte, byteCount);
+            at.write(byteData, 0, ret);
+            firstByte =+ byteCount;
+        }*/
+
+        in.close();
+        at.stop();
+        at.release();
 
 
     }
